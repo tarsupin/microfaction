@@ -31,12 +31,12 @@ class AppThreads_config {
 			`uni_id`				int(10)			unsigned	NOT NULL	DEFAULT '0',
 			`hashtag`				varchar(22)					NOT NULL	DEFAULT '',
 			`title`					varchar(72)					NOT NULL	DEFAULT '',
-			`photo`					varchar(148)				NOT NULL	DEFAULT '',
-			`url`					varchar(148)				NOT NULL	DEFAULT '',
+			`thumbnail`				varchar(148)				NOT NULL	DEFAULT '',
+			`url`					varchar(200)				NOT NULL	DEFAULT '',
 			
 			`rating`				float(6,4)					NOT NULL	DEFAULT '0.0000',
 			
-			`clicks`				mediumint(6)	unsigned	NOT NULL	DEFAULT '0',
+			`views`					mediumint(6)	unsigned	NOT NULL	DEFAULT '0',
 			`actions`				mediumint(6)	unsigned	NOT NULL	DEFAULT '0',
 			
 			`vote_up`				mediumint(6)	unsigned	NOT NULL	DEFAULT '0',
@@ -104,7 +104,7 @@ class AppThreads_config {
 		
 		// User's Subscription to Categories
 		Database::exec("
-		CREATE TABLE IF NOT EXISTS `user_category_subs`
+		CREATE TABLE IF NOT EXISTS `user_subscriptions`
 		(
 			`uni_id`				int(10)			unsigned	NOT NULL	DEFAULT '0',
 			`hashtag`				varchar(22)					NOT NULL	DEFAULT '',
@@ -130,7 +130,7 @@ class AppThreads_config {
 		$pass3 = DatabaseAdmin::columnsExist("threads_priority", array("hashtag", "thread_id"));
 		$pass4 = DatabaseAdmin::columnsExist("threads_best", array("hashtag", "thread_id"));
 		$pass5 = DatabaseAdmin::columnsExist("votes_thread", array("uni_id", "thread_id"));
-		$pass6 = DatabaseAdmin::columnsExist("user_category_subs", array("uni_id", "hashtag"));
+		$pass6 = DatabaseAdmin::columnsExist("user_subscriptions", array("uni_id", "hashtag"));
 		
 		return ($pass and $pass2 and $pass3 and $pass4 and $pass5 and $pass6);
 	}

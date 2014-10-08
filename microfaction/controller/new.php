@@ -1,12 +1,29 @@
 <?php if(!defined("CONF_PATH")) { die("No direct script access allowed."); }
 
+// Check if the user has changed their subscriptions
+if(isset($_GET['tag']) && Link::clicked("microfaction-tag") && Me::$loggedIn)
+{
+	// Check if we're trying to remove this subscription
+	if(isset($_GET['remove']))
+	{
+		AppHashtags::hashtagSubscribe(Me::$id, $_GET['tag'], false);
+	}
+	else
+	{
+		AppHashtags::hashtagVisible(Me::$id, $_GET['tag'], isset($_GET['vis']));
+	}
+}
+
 // Prepare Values
+$hashtagList = AppHashtags::getFullList();
+$activeHashtag = (isset($url[1]) ? $url[1] : "");
+
 $threadList = array();
 $voteList = array();
 
-AppThreads::getSubscriptions(Me::$id, $microfaction);
+AppHashtags::getSubscriptions(Me::$id, $hashtagList);
 
-$newThreads = AppThreads::listNew(1, 50, AppThreads::$activeHashtag);
+$newThreads = AppThreads::listNew(1, 50, $activeHashtag);
 
 if(Me::$loggedIn)
 {
@@ -43,13 +60,23 @@ echo '
 <div id="panel-right"></div>
 <div id="content">' . Alert::display();
 
-echo AppThreads::drawSubscriptionList($microfaction);
+echo AppHashtags::drawSubscriptionList("new");
 
 echo '
 <div class="overwrap-box">
-	<div class="overwrap-line">' . $config['site-name'] . '</div>
 	<div class="inner-box">';
 	
+if($activeHashtag)
+{
+	echo '
+	<div class="overwrap-line">' . $activeHashtag . '</div>';
+}
+
+if(!$newThreads)
+{
+	echo '<div style="padding:6px;">No posts can be found here at this time.</div>';
+}
+
 foreach($newThreads as $threads)
 {
 	$threadID = $threads['id'];
@@ -71,12 +98,12 @@ foreach($newThreads as $threads)
 	echo '
 	<div class="inner-line">
 		<div class="inner-score">
-			<a id="upVote-' . $threadID . '" href="/new?voteUp=' . $threadID . '" class="' . $vUp . '" onclick="runVote(' . $threadID . ', 1); return false;"><span class="icon-thumbs-up"></span></a><br />
-			<a id="downVote-' . $threadID . '" href="/new?voteDown=' . $threadID . '" class="' . $vDown . '" onclick="runVote(' . $threadID . ', -1); return false;"><span class="icon-thumbs-down"></span></a>
+			<a id="upVote-' . $threadID . '" href="/new?voteUp=' . $threadID . '" class="' . $vUp . '" onclick="runVote(' . $threadID . ', 1); return false;"><span class="icon-arrow-up"></span></a><br />
+			<a id="downVote-' . $threadID . '" href="/new?voteDown=' . $threadID . '" class="' . $vDown . '" onclick="runVote(' . $threadID . ', -1); return false;"><span class="icon-arrow-down"></span></a>
 		</div>
 		<div class="inner-name">
 			<a href="/thread?id=' . $threadID . '">' . $threads['title'] . '</a>
-			<div class="inner-desc"><a href="/thread?id=' . $threadID . '">' . $threads['comments'] . ' comments</a> &bull; By <a href="/' . $threads['handle'] . '">' . $threads['display_name'] . '</a> &bull; ' . Time::fuzzy($threads['date_created']) . '</div>
+			<div class="inner-desc"><a href="/thread?id=' . $threadID . '">' . $threads['comments'] . ' comments</a>' . ($activeHashtag == "" ? '&bull; <a href="/' . $threads['hashtag'] . '">/' . $threads['hashtag'] . '</a>' : '') . ' &bull; By <a href="/' . $threads['handle'] . '">' . $threads['display_name'] . '</a> &bull; ' . Time::fuzzy((int) $threads['date_created']) . '</div>
 		</div>
 	</div>';
 }

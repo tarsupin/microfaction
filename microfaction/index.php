@@ -17,10 +17,7 @@ require(SYS_PATH . "/routes.php");
 // If a page hasn't loaded yet, check if there is a dynamic load
 if($url[0] != '')
 {
-	if(in_array(urldecode($url[0]), $microfaction['categories']))
-	{
-		require(APP_PATH . '/controller/home.php'); exit;
-	}
+	require(APP_PATH . '/controller/home.php'); exit;
 }
 //*/
 

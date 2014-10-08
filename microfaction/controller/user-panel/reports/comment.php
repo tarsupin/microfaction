@@ -61,7 +61,7 @@ else
 }
 
 // Run Header
-require(SYS_PATH . "/controller/includes/user_panel_header.php");
+require(APP_PATH . "/includes/user_panel_header.php");
 
 // Display Form
 echo '
@@ -81,7 +81,7 @@ echo '
 		Thread Details:
 		<br /> &nbsp; &bull; Comment: ' . $commentData['comment'] . '
 		<br /> &nbsp; &bull; Poster: ' . $authorData['display_name'] . ' (@' . $authorData['handle'] . ')
-		<br /> &nbsp; &bull; Posted: ' . Time::fuzzy($commentData['date_posted']) . '
+		<br /> &nbsp; &bull; Posted: ' . Time::fuzzy((int) $commentData['date_posted']) . '
 	</p>
 	<p>
 		Please Explain this Report (be specific):<br />

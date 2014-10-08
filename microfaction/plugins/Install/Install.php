@@ -18,6 +18,9 @@ abstract class Install extends Installation {
 	)					// RETURNS <bool> TRUE on success, FALSE on failure.
 	
 	{
+		// Run the installation script for the site
+		require(CONF_PATH . "/includes/install-script.php");
+		
 		return true;
 	}
 }

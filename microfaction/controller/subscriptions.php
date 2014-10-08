@@ -9,19 +9,21 @@ if(!Me::$loggedIn)
 // Check if the user has changed their subscriptions
 if(isset($_GET['tag']) && Link::clicked("edit-tag-microfaction"))
 {
-	AppThreads::hashtagSubscribe(Me::$id, $_GET['tag'], isset($_GET['sub']));
+	AppHashtags::hashtagSubscribe(Me::$id, $_GET['tag'], isset($_GET['sub']));
 }
 
-// Prepare Values
-AppThreads::getSubscriptions(Me::$id, $microfaction);
 
 // Get Full List of available Subscriptions
 $active = array();
 $inactive = array();
 
-foreach($microfaction['hashtags'] as $hashtag => $bool)
+// Prepare Values
+$hashtags = AppHashtags::getByPriority(6);
+AppHashtags::getSubscriptions(Me::$id, $hashtags);
+
+foreach($hashtags as $hashtag)
 {
-	if(in_array($hashtag, AppThreads::$userSubs))
+	if(in_array($hashtag, AppHashtags::$userSubs))
 	{
 		$active[$hashtag] = $hashtag;
 	}
@@ -50,14 +52,14 @@ echo '
 <div class="overwrap-box">
 	<div class="overwrap-line">Active Hashtags (click to remove)</div>
 	<div class="inner-box">';
-	
-	foreach($active as $hashtag => $bool)
-	{
-		echo '
-		<div class="tag-line">
-			<a href="/subscriptions?tag=' . $hashtag . '&' . Link::prepare("edit-tag-microfaction") . '">#' . $hashtag . '</a>
-		</div>';
-	}
+
+foreach($active as $hashtag => $bool)
+{
+	echo '
+	<div class="tag-line">
+		<a href="/subscriptions?tag=' . $hashtag . '&' . Link::prepare("edit-tag-microfaction") . '">#' . $hashtag . '</a>
+	</div>';
+}
 	
 echo '
 	</div>
@@ -66,7 +68,7 @@ echo '
 
 <div style="float:left; margin-left:2%; width:55%; overflow:hidden;">
 <div class="overwrap-box">
-	<div class="overwrap-line">Available Hashtags (click to subscribe)</div>
+	<div class="overwrap-line">Featured Hashtags (click to subscribe)</div>
 	<div class="inner-box">';
 	
 	foreach($inactive as $hashtag => $bool)

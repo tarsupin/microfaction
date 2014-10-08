@@ -427,12 +427,13 @@ abstract class AppComment {
 		{
 			// Prepare Values
 			$cID = (string) $comment['id'];
+			$comment['date_posted'] = (int) $comment['date_posted'];
 			
 			echo '
 			<div id="comment-' . $cID . '" class="comment-wrap">
 			<div class="vote-box">
-				<a id="upVote-' . $cID . '" href="javascript:voteCom(' . $cID . ', 1);" class="voteUp"><span class="icon-image"></span></a><br />
-				<a id="downVote-' . $cID . '" href="javascript:voteCom(' . $cID . ', -1);" class="voteDown"><span class="icon-image"></span></a>
+				<a id="upVote-' . $cID . '" href="javascript:voteCom(' . $cID . ', 1);" class="voteUp"><span class="icon-arrow-up"></span></a><br />
+				<a id="downVote-' . $cID . '" href="javascript:voteCom(' . $cID . ', -1);" class="voteDown"><span class="icon-arrow-down"></span></a>
 			</div>
 			<div class="reply-box">
 				<p>' . Comment::showSyntax($comment['comment']) . '</p>
@@ -460,10 +461,8 @@ abstract class AppComment {
 			</div>';
 			
 			echo '
-			<div id="comment-' . $cID . '-form"></div>';
-			
-			echo '
-			<div id="reply-box-' . $cID . '">';
+			<div id="comment-' . $cID . '-form"></div>
+				<div id="reply-box-' . $cID . '">';
 			
 			if($comment['has_child'] > 0)
 			{
@@ -474,9 +473,7 @@ abstract class AppComment {
 			}
 			
 			echo '
-			</div>';
-			
-			echo '
+				</div>
 			</div>';
 		}
 	}
@@ -511,8 +508,8 @@ abstract class AppComment {
 			echo '
 			<div id="comment-' . $cID . '" class="comment-wrap comment-reply">
 			<div class="vote-box">
-				<a id="upVote-' . $cID . '" href="javascript:voteCom(' . $cID . ', 1);" class="voteUp"><span class="icon-image"></span></a><br />
-				<a id="downVote-' . $cID . '" href="javascript:voteCom(' . $cID . ', -1);" class="voteDown"><span class="icon-image"></span></a>
+				<a id="upVote-' . $cID . '" href="javascript:voteCom(' . $cID . ', 1);" class="voteUp"><span class="icon-arrow-up"></span></a><br />
+				<a id="downVote-' . $cID . '" href="javascript:voteCom(' . $cID . ', -1);" class="voteDown"><span class="icon-arrow-down"></span></a>
 			</div>
 			<div class="reply-box">
 				<p>' . Comment::showSyntax($comment['comment']) . '</p>

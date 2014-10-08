@@ -6,6 +6,12 @@ if(!Me::$loggedIn)
 	Me::redirectLogin("/post", "/");
 }
 
+// Prepare Values
+$hashtagList = AppHashtags::getFullList();
+$_GET['hashtag'] = isset($_GET['hashtag']) ? Sanitize::variable($_GET['hashtag']) : "";
+
+AppHashtags::getSubscriptions(Me::$id, $hashtagList);
+
 // Run the Form
 if(Form::submitted("post-microfaction-" . SITE_HANDLE))
 {
@@ -17,7 +23,7 @@ if(Form::submitted("post-microfaction-" . SITE_HANDLE))
 		Alert::error("Malformed URL", "That URL appears to be malformed.", 1);
 	}
 	
-	if(!isset($microfaction['hashtags'][$_POST['hashtag']]))
+	if(!in_array($_POST['hashtag'], $hashtagList))
 	{
 		Alert::error("Hashtag", "That tag cannot be accessed at this time.", 3);
 	}
@@ -74,10 +80,10 @@ echo '
 		Category:
 		<select name="hashtag">';
 		
-		foreach($microfaction['hashtags'] as $hashtag => $bool)
+		foreach($hashtagList as $hashtag)
 		{
 			echo '
-			<option value="' . $hashtag . '"' . ($_POST['hashtag'] == $hashtag ? ' selected' : '') . '>#' . $hashtag . '</option>';
+			<option value="' . $hashtag . '"' . ($_GET['hashtag'] == $hashtag ? ' selected' : '') . '>#' . $hashtag . '</option>';
 		}
 		
 		echo '

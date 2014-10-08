@@ -49,7 +49,7 @@ echo '
 	<br /> &nbsp; &bull; Title: ' . $threadData['title'] . '
 	<br /> &nbsp; &bull; Votes: +' . $threadData['vote_up'] . ' -' . $threadData['vote_down'] . '
 	<br /> &nbsp; &bull; Author: ' . $authorData['display_name'] . ' (@' . $authorData['handle'] . ')
-	<br /> &nbsp; &bull; Posted: ' . Time::fuzzy($threadData['date_created']) . '
+	<br /> &nbsp; &bull; Posted: ' . Time::fuzzy((int) $threadData['date_created']) . '
 </p>
 <p><a class="button" href="/admin/delete-thread?id=' . ($threadData['id']) . '&' . Link::prepare("sub-mod-delete-thread") . '">Delete the Thread</a></p>';
 

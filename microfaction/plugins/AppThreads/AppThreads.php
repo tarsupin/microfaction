@@ -1,15 +1,15 @@
-<?php if(!defined("CONF_PATH")) { die("No direct script access allowed."); }
+<?php if(!defined("CONF_PATH")) { die("No direct script access allowed."); } /*
 
-abstract class AppThreads {
+-----------------------------------------
+------ About the AppThreads Plugin ------
+-----------------------------------------
 
-/****** AppThreads Class ******
-This class provides handling for a microfaction site.
-
-****** Examples of using this class ******
-
+This plugin provides handling for the threads on MicroFaction sites.
 
 
-****** Methods Available ******
+-------------------------------
+------ Methods Available ------
+-------------------------------
 
 $priorityThreads = AppThreads::listPriority([$page], [$showNum]);
 $newThreads = AppThreads::listNew([$page], [$showNum]);
@@ -22,7 +22,7 @@ AppThreads::vote($uniID, $threadID, $vote);
 AppThreads::voteUp($threadID);
 AppThreads::clickThread($threadID);
 
-$threadID = AppThreads::createThread($hashtag, $title, [$url], [$photo]);
+$threadID = AppThreads::createThread($hashtag, $title, [$url], [$thumbnail]);
 AppThreads::pruneNew();
 
 $threadData = AppThreads::threadData($threadID, $columns);
@@ -33,78 +33,14 @@ AppThreads::delete($hashtag, $threadID);
 
 AppThreads::runPriority();
 
-AppThreads::hashtagSubscribe($uniID, $hashtag, $subscribe = true);
-AppThreads::hashtagVisible($uniID, $hashtag, $visible);
+AppHashtags::hashtagSubscribe($uniID, $hashtag, $subscribe = true);
+AppHashtags::hashtagVisible($uniID, $hashtag, $visible);
 
-AppThreads::drawSubscriptionList();
+AppHashtags::drawSubscriptionList([$page]);
 
 */
-	
-	
-/****** Class Variables ******/
-	public static $userSubs = array();			// <array>
-	public static $userActiveSubs = array();	// <array>
-	public static $userSubsSQL = "";			// <str>
-	public static $activeHashtag = "";			// <str> The active hashtag being used.
-	
-	
-/****** Get the subscriptions for the user ******/
-	public static function getSubscriptions
-	(
-		$uniID			// <int> The UniID to get subscriptions for.
-	,	$microfaction	// <str:mixed> The site's microfaction data.
-	)					// RETURNS <void>
-	
-	// AppThreads::getSubscriptions($uniID, $microfaction);
-	{
-		self::$userActiveSubs = array();
-		self::$userSubsSQL = "";
-		
-		// If the user isn't logged in, just provide the full list
-		if($uniID == 0)
-		{
-			foreach($microfaction['hashtags'] as $hashtag => $bool)
-			{
-				self::$userActiveSubs[] = $hashtag;
-				self::$userSubsSQL .= (self::$userSubsSQL == "" ? "" : ", ") . "?";
-			}
-			
-			return;
-		}
-		
-		// Get the list of user's active subs
-		$subs = Database::selectMultiple("SELECT hashtag, active FROM user_category_subs WHERE uni_id=?", array($uniID));
-		
-		if(count($subs) == 0)
-		{
-			Database::startTransaction();
-			
-			// Add all subscriptions to the user
-			foreach($microfaction['hashtags'] as $hashtag => $bool)
-			{
-				Database::query("INSERT INTO user_category_subs (uni_id, hashtag, active) VALUES (?, ?, ?)", array($uniID, $hashtag, 1));
-			}
-			
-			Database::endTransaction();
-			
-			$subs = Database::selectMultiple("SELECT hashtag, active FROM user_category_subs WHERE uni_id=?", array($uniID));
-		}
-		
-		foreach($subs as $sub)
-		{
-			if(isset($microfaction['hashtags'][$sub['hashtag']]))
-			{
-				self::$userSubs[] = $sub['hashtag'];
-				
-				// Check if the value is active
-				if($sub['active'] == 1)
-				{
-					self::$userActiveSubs[] = $sub['hashtag'];
-					self::$userSubsSQL .= (self::$userSubsSQL == "" ? "" : ", ") . "?";
-				}
-			}
-		}
-	}
+
+abstract class AppThreads {
 	
 	
 /****** Get a list of Prioritized Threads ******/
@@ -118,7 +54,7 @@ AppThreads::drawSubscriptionList();
 	// $priorityThreads = AppThreads::listPriority([$page], [$showNum], [$hashtag]);
 	{
 		// Check if we're filtering results to specific hashtag
-		list($sqlQ, $sqlArray) = AppThreads::filterHashtag($hashtag);
+		list($sqlQ, $sqlArray) = AppHashtags::filterHashtag($hashtag);
 		
 		if(!$sqlQ) { return array(); }
 		
@@ -137,7 +73,7 @@ AppThreads::drawSubscriptionList();
 	// $newThreads = AppThreads::listNew([$page], [$showNum], [$hashtag]);
 	{
 		// Check if we're filtering results to specific hashtag
-		list($sqlQ, $sqlArray) = AppThreads::filterHashtag($hashtag);
+		list($sqlQ, $sqlArray) = AppHashtags::filterHashtag($hashtag);
 		
 		if(!$sqlQ) { return array(); }
 		
@@ -156,37 +92,11 @@ AppThreads::drawSubscriptionList();
 	// $bestThreads = AppThreads::listBest([$page], [$showNum], [$hashtag]);
 	{
 		// Check if we're filtering results to specific hashtag
-		list($sqlQ, $sqlArray) = AppThreads::filterHashtag($hashtag);
+		list($sqlQ, $sqlArray) = AppHashtags::filterHashtag($hashtag);
 		
 		if(!$sqlQ) { return array(); }
 		
 		return Database::selectMultiple("SELECT t.*, u.handle, u.display_name FROM threads_best tb INNER JOIN threads t ON t.id=tb.thread_id INNER JOIN users u ON u.uni_id=t.uni_id WHERE tb.hashtag IN (" . $sqlQ . ") ORDER BY tb.rating DESC LIMIT " . (($page - 1) * $showNum) . ", " . ($showNum + 0), $sqlArray);
-	}
-	
-	
-/****** Return Category Scan Data for a Thread ******/
-	private static function filterHashtag
-	(
-		$hashtag = ""	// <str> The hashtag to restrict this search to.
-	)					// RETURNS <int:mixed> a filtered list for SQL.
-	
-	// list($sqlQ, $sqlArray) = AppThreads::filterHashtag($hashtag);
-	{
-		// If we're searching a specific hashtag
-		if($hashtag != "")
-		{
-			$sqlQ = "?";
-			$sqlArray = array($hashtag);
-		}
-		
-		// If we're searching the standard home page (all active subs)
-		else
-		{
-			$sqlQ = Sanitize::whitelist(self::$userSubsSQL, ", ?");
-			$sqlArray = self::$userActiveSubs;
-		}
-		
-		return array($sqlQ, $sqlArray);
 	}
 	
 	
@@ -296,7 +206,7 @@ AppThreads::drawSubscriptionList();
 	
 	// AppThreads::clickThread($threadID);
 	{
-		return Database::query("UPDATE threads SET clicks=clicks+1, actions=actions+1 WHERE id=? LIMIT 1", array($threadID));
+		return Database::query("UPDATE threads SET views=views+1, actions=actions+1 WHERE id=? LIMIT 1", array($threadID));
 	}
 	
 	
@@ -306,14 +216,14 @@ AppThreads::drawSubscriptionList();
 		$hashtag		// <str> The hashtag to assign the thread to.
 	,	$title			// <str> The thread title.
 	,	$url = ""		// <str> The URL that the thread directs to (empty if a self-post).
-	,	$photo = ""		// <str> The photo for the thread, if applicable.
+	,	$thumbnail = ""	// <str> The thumbnail for the thread, if applicable.
 	)					// RETURNS <int> the thread ID, 0 on failure.
 	
-	// $threadID = AppThreads::createThread($hashtag, $title, [$url], [$photo]);
+	// $threadID = AppThreads::createThread($hashtag, $title, [$url], [$thumbnail]);
 	{
 		Database::startTransaction();
 		
-		if($pass = Database::query("INSERT INTO threads (uni_id, hashtag, title, photo, url, date_created) VALUES (?, ?, ?, ?, ?, ?)", array(Me::$id, $hashtag, $title, $photo, $url, time())))
+		if($pass = Database::query("INSERT INTO threads (uni_id, hashtag, title, thumbnail, url, date_created) VALUES (?, ?, ?, ?, ?, ?)", array(Me::$id, $hashtag, $title, $thumbnail, $url, time())))
 		{
 			$threadID = Database::$lastID;
 			
@@ -341,12 +251,12 @@ AppThreads::drawSubscriptionList();
 		$threadID		// <int> The thread ID.
 	,	$title			// <str> The thread title.
 	,	$url = ""		// <str> The URL that the thread directs to (empty if a self-post).
-	,	$photo = ""		// <str> The photo for the thread, if applicable.
+	,	$thumbnail = ""	// <str> The thumbnail for the thread, if applicable.
 	)					// RETURNS <bool> TRUE on success, FALSE on failure.
 	
-	// AppThreads::updateThread($threadID, $title, [$url], [$photo]);
+	// AppThreads::updateThread($threadID, $title, [$url], [$thumbnail]);
 	{
-		return Database::query("UPDATE threads SET title=?, photo=?, url=? WHERE id=? LIMIT 1", array($title, $photo, $url, $threadID));
+		return Database::query("UPDATE threads SET title=?, thumbnail=?, url=? WHERE id=? LIMIT 1", array($title, $thumbnail, $url, $threadID));
 	}
 	
 	
@@ -445,10 +355,10 @@ AppThreads::drawSubscriptionList();
 /****** Update Priority Threads ******/
 	public static function runPriority
 	(
-		$microfaction	// <str:mixed> The site's microfaction data.
+		$hashtags		// <int:str> The list of hashtags.
 	)					// RETURNS <bool> TRUE on success, FALSE on failure.
 	
-	// AppThreads::runPriority($microfaction);
+	// AppThreads::runPriority($hashtags);
 	{
 		Database::startTransaction();
 		
@@ -457,7 +367,7 @@ AppThreads::drawSubscriptionList();
 		
 		$pass = true;
 		
-		foreach($microfaction['hashtags'] as $hashtag => $bool)
+		foreach($hashtags as $hashtag)
 		{
 			// Gather list of new threads, ordered by most recent
 			$fullListNew = Database::selectMultiple("SELECT hashtag, thread_id FROM threads_new WHERE hashtag=? ORDER BY thread_id DESC LIMIT 100", array($hashtag));
@@ -481,15 +391,15 @@ AppThreads::drawSubscriptionList();
 	}
 	
 	
-/****** Get the Photo of the Page ******/
-	public static function getPhoto
+/****** Get the Thumbnail of the Page ******/
+	public static function getThumbnail
 	(
 		$html		// <str> The html of the page.
 	)				// RETURNS <mixed>
 	
-	// $photo = AppThreads::getPhoto($html);
+	// $thumbnail = AppThreads::getThumbnail($html);
 	{
-		$photo = "";
+		$thumbnail = "";
 		
 		// Get the OG values
 		libxml_use_internal_errors(true);
@@ -505,19 +415,19 @@ AppThreads::drawSubscriptionList();
 			
 			if($property == "og:image")
 			{
-				$photo = $meta->getAttribute('content');
+				$thumbnail = $meta->getAttribute('content');
 				break;
 			}
 			
-			else if($photo == "")
+			else if($thumbnail == "")
 			{
 				if($property == "og:image:url")
 				{
-					$photo = $meta->getAttribute('content');
+					$thumbnail = $meta->getAttribute('content');
 				}
 				else if($property == "og:image:secure_url")
 				{
-					$photo = $meta->getAttribute('content');
+					$thumbnail = $meta->getAttribute('content');
 				}
 			}
 			
@@ -525,120 +435,19 @@ AppThreads::drawSubscriptionList();
 			// $rmetas[$property] = $content;
 		}
 		
-		return $photo;
+		return $thumbnail;
 	}
 	
 	
-/****** Get the URL for a photo ******/
-	public static function photoURL
+/****** Get the URL for a thumbnail ******/
+	public static function thumbnailURL
 	(
 		$threadID		// <int> The page to return.
-	)					// RETURNS <str> the URL to the photo.
+	)					// RETURNS <str> the URL to the thumbnail.
 	
-	// $photoURL = AppThreads::photoURL($threadID);
+	// $thumbnailURL = AppThreads::thumbnailURL($threadID);
 	{
 		return APP_PATH . "/images/thumbs/" . ceil($threadID / 10000) . "/" . $threadID . ".jpg";
-	}
-	
-	
-/****** Add a hashtag subscription to a user ******/
-	public static function hashtagSubscribe
-	(
-		$uniID				// <int> The uniID of the user.
-	,	$hashtag			// <str> The hashtag.
-	,	$subscribe = true	// <bool> TRUE if adding the subscription, FALSE if removing it.
-	)						// RETURNS <bool> TRUE if exists, FALSE on failure.
-	
-	// AppThreads::hashtagSubscribe($uniID, $hashtag, $subscribe);
-	{
-		global $microfaction;
-		
-		// Make sure that hashtag exists
-		if(!isset($microfaction['hashtags'][$hashtag]))
-		{
-			return false;
-		}
-		
-		// Check if the user has the subscription listed
-		if(Database::selectValue("SELECT hashtag FROM user_category_subs WHERE uni_id=? AND hashtag=? LIMIT 1", array($uniID, $hashtag)))
-		{
-			if(!$subscribe)
-			{	
-				return Database::query("DELETE FROM user_category_subs WHERE uni_id=? AND hashtag=? LIMIT 1", array($uniID, $hashtag));
-			}
-		}
-		else if($subscribe)
-		{
-			return Database::query("INSERT INTO user_category_subs (uni_id, hashtag, active) VALUES (?, ?, ?)", array($uniID, $hashtag, 1));
-		}
-		
-		return true;
-	}
-	
-	
-/****** Add a hashtag subscription to a user ******/
-	public static function hashtagVisible
-	(
-		$uniID				// <int> The uniID of the user.
-	,	$hashtag			// <str> The hashtag.
-	,	$visible = true		// <bool> TRUE to make it visible, FALSE if hiding it.
-	)						// RETURNS <bool> TRUE if exists, FALSE on failure.
-	
-	// AppThreads::hashtagVisible($uniID, $hashtag, $visible);
-	{
-		global $microfaction;
-		
-		// Make sure that category exists
-		if(!isset($microfaction['hashtags'][$hashtag]))
-		{
-			return false;
-		}
-		
-		// Make sure the user is subscribed
-		if(!Database::selectValue("SELECT uni_id FROM user_category_subs WHERE uni_id=? AND hashtag=? LIMIT 1", array($uniID, $hashtag)))
-		{
-			return false;
-		}
-		
-		return Database::query("UPDATE user_category_subs SET active=? WHERE uni_id=? AND hashtag=? LIMIT 1", array(($visible === true ? 1 : 0), $uniID, $hashtag));
-	}
-	
-	
-/****** Draw your hashtag subscriptions ******/
-	public static function drawSubscriptionList
-	(
-		$microfaction	// <str:mixed> The site's microfaction data.
-	)					// RETURNS <void> OUTPUTS HTML for the subscription list, FALSE on failure.
-	
-	// echo AppThreads::drawSubscriptionList($microfaction);
-	{
-		global $url;
-		
-		$new = ($url[0] == "new" ? "new/" : "");
-		
-		echo '
-		<div>';
-		
-		foreach($microfaction['hashtags'] as $hashtag => $bool)
-		{
-			if(in_array($hashtag, self::$userSubs))
-			{
-				if(in_array($hashtag, self::$userActiveSubs))
-				{
-					echo '
-					<div class="s-tag s-tag-on"><a href="/' . $new . '?tag=' . $hashtag . '&' . Link::prepare("microfaction-tag") . '&remove=1"><span class="icon-circle-close"></span></a> <a href="/' . $new . '?tag=' . $hashtag . '&' . Link::prepare("microfaction-tag") . '"><span class="icon-eye"></span></a> <a href="/' . $new . urlencode($hashtag) . '">' . $hashtag . '</a></div>';
-				}
-				else
-				{
-					echo '
-					<div class="s-tag s-tag-off"><a href="/' . $new . '?tag=' . $hashtag . '&' . Link::prepare("microfaction-tag") . '&remove=1"><span class="icon-circle-close"></span></a> <a href="/' . $new . '?tag=' . $hashtag . '&' . Link::prepare("microfaction-tag") . '&vis=1"><span class="icon-eye"></span></a> <a href="/' . $new . urlencode($hashtag) . '">' . $hashtag . '</a></div>';
-				}
-			}
-		}
-		
-		echo '
-			<div class="s-tag s-tag-off" style="background-color:#eea0a0;"><a href="/subscriptions"><span class="icon-plus"></span> Edit</a></div>
-		</div>';
 	}
 	
 }

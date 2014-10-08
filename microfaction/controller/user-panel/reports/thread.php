@@ -62,7 +62,7 @@ else
 }
 
 // Run Header
-require(SYS_PATH . "/controller/includes/user_panel_header.php");
+require(APP_PATH . "/includes/user_panel_header.php");
 
 // Display Form
 echo '
@@ -84,7 +84,7 @@ echo '
 		<br /> &nbsp; &bull; Title: ' . $threadData['title'] . '
 		<br /> &nbsp; &bull; Category: ' . $microfaction['categories'][$threadData['category_id']] . '
 		<br /> &nbsp; &bull; Poster: ' . $authorData['display_name'] . ' (@' . $authorData['handle'] . ')
-		<br /> &nbsp; &bull; Posted: ' . Time::fuzzy($threadData['date_created']) . '
+		<br /> &nbsp; &bull; Posted: ' . Time::fuzzy((int) $threadData['date_created']) . '
 	</p>
 	<p>
 		Please Explain this Report (be specific):<br />
