@@ -17,6 +17,11 @@ WidgetLoader::add("SidePanel", 5, $html);
 $uniURL = str_replace("http://", "", URL::microfaction_com());
 $siteType = strtolower(str_replace("micro_", "", SITE_HANDLE));
 
+if(Me::$loggedIn)
+{
+	$uniURL .= "?slg=" . Me::$id;
+}
+
 $html = str_replace("is-" . $siteType, "nav-active", '
 <div class="panel-box">
 	<ul class="panel-slots">

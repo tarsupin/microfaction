@@ -7,7 +7,9 @@ if(!$threadData = AppThreads::threadData((int) $_GET['id'], "*"))
 }
 
 // Prepare Values
-$threadID = $threadData['id'];
+$threadID = (int) $threadData['id'];
+$threadData['uni_id'] = (int) $threadData['uni_id'];
+
 $userData = User::get($threadData['uni_id'], "handle, display_name");
 
 if(Me::$loggedIn)

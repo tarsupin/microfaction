@@ -116,7 +116,7 @@ abstract class AppThreads {
 			$sql .= ($sql != "" ? ", " : "") . "?";
 		}
 		
-		if(!$sql) { return false; }
+		if(!$sql) { return array(); }
 		
 		array_unshift($threadList, $uniID);
 		
