@@ -233,7 +233,7 @@ abstract class AppThreads {
 		if(Database::endTransaction($pass))
 		{
 			// Prune list of new threads once in a while
-			if(mt_rand(0, 40) == 5)
+			if(mt_rand(0, 500) == 22)
 			{
 				self::pruneNew();
 			}
@@ -293,7 +293,7 @@ abstract class AppThreads {
 	{
 		if($threadData = AppThreads::threadData($threadID, "vote_up, vote_down, actions, date_created"))
 		{
-			return Ranking::fast($threadData['vote_up'], $threadData['vote_down'], $threadData['actions'], time() - $threadData['date_created']);
+			return Ranking::fast((int) $threadData['vote_up'], (int) $threadData['vote_down'], (int) $threadData['actions'], (int) (time() - $threadData['date_created']));
 		}
 		
 		return false;

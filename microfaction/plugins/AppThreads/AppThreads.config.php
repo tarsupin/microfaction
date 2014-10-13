@@ -30,7 +30,7 @@ class AppThreads_config {
 			
 			`uni_id`				int(10)			unsigned	NOT NULL	DEFAULT '0',
 			`hashtag`				varchar(22)					NOT NULL	DEFAULT '',
-			`title`					varchar(72)					NOT NULL	DEFAULT '',
+			`title`					varchar(100)				NOT NULL	DEFAULT '',
 			`thumbnail`				varchar(148)				NOT NULL	DEFAULT '',
 			`url`					varchar(200)				NOT NULL	DEFAULT '',
 			

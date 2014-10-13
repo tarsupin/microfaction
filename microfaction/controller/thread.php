@@ -44,7 +44,7 @@ if(Me::$loggedIn)
 		
 		if(FormValidate::pass())
 		{
-			if($commentID = AppComment::create($threadID, Me::$id, $_POST['reply_to'], $_POST['reply'], 0, "/thread?id=" . $threadID . "&toCom=" . $_POST['reply_to'], $threadData['uni_id']))
+			if($commentID = AppComment::create($threadID, Me::$id, (int) $_POST['reply_to'], $_POST['reply'], 0, "/thread?id=" . $threadID . "&toCom=" . $_POST['reply_to'], $threadData['uni_id']))
 			{
 				Alert::success("Posted Comment", "You have replied to a comment!");
 			}

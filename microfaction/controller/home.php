@@ -26,11 +26,11 @@ AppHashtags::getSubscriptions(Me::$id, $hashtagList);
 if(Me::$loggedIn)
 {
 	// Update the Priority List a few times per hour
-	if(!$lastUpdate = Cache::get("date_priorityList"))
+	if(!$lastUpdate = (int) Cache::get("update_" . SITE_HANDLE))
 	{
 		AppThreads::runPriority($hashtagList);
 		
-		Cache::set("date_priorityList", "1", 60 * 5);
+		Cache::set("update_" . SITE_HANDLE, time(), 60 * 5);
 	}
 	
 	$priorityThreads = AppThreads::listPriority(1, 50, $activeHashtag);
@@ -38,11 +38,11 @@ if(Me::$loggedIn)
 	// Check if the user has Voted
 	if(isset($_GET['voteUp']))
 	{
-		AppThreads::vote(Me::$id, $_GET['voteUp'], 1);
+		AppThreads::vote(Me::$id, (int) $_GET['voteUp'], 1);
 	}
 	else if(isset($_GET['voteDown']))
 	{
-		AppThreads::vote(Me::$id, $_GET['voteDown'], -1);
+		AppThreads::vote(Me::$id, (int) $_GET['voteDown'], -1);
 	}
 	
 	// Get Vote List

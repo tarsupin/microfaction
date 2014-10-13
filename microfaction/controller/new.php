@@ -30,11 +30,11 @@ if(Me::$loggedIn)
 	// Check if the user has Voted
 	if(isset($_POST['voteUp']))
 	{
-		AppThreads::vote(Me::$id, $_POST['voteUp'], 1);
+		AppThreads::vote(Me::$id, (int) $_POST['voteUp'], 1);
 	}
 	else if(isset($_POST['voteDown']))
 	{
-		AppThreads::vote(Me::$id, $_POST['voteDown'], -1);
+		AppThreads::vote(Me::$id, (int) $_POST['voteDown'], -1);
 	}
 	
 	// Get Vote List
@@ -103,7 +103,7 @@ foreach($newThreads as $threads)
 		</div>
 		<div class="inner-name">
 			<a href="/thread?id=' . $threadID . '">' . $threads['title'] . '</a>
-			<div class="inner-desc"><a href="/thread?id=' . $threadID . '">' . $threads['comments'] . ' comments</a>' . ($activeHashtag == "" ? '&bull; <a href="/' . $threads['hashtag'] . '">/' . $threads['hashtag'] . '</a>' : '') . ' &bull; By <a href="/' . $threads['handle'] . '">' . $threads['display_name'] . '</a> &bull; ' . Time::fuzzy((int) $threads['date_created']) . '</div>
+			<div class="inner-desc"><a href="/thread?id=' . $threadID . '">' . $threads['comments'] . ' comments</a>' . ($activeHashtag == "" ? ' &bull; <a href="/' . $threads['hashtag'] . '">/' . $threads['hashtag'] . '</a>' : '') . ' &bull; By <a href="/' . $threads['handle'] . '">' . $threads['display_name'] . '</a> &bull; ' . Time::fuzzy((int) $threads['date_created']) . '</div>
 		</div>
 	</div>';
 }

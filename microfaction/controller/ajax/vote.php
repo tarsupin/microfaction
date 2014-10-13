@@ -8,9 +8,9 @@ if(!isset($_POST['vote']) or !isset($_POST['threadID']) or !Me::$loggedIn)
 
 if($_POST['vote'] == 1)
 {
-	AppThreads::vote(Me::$id, $_POST['threadID'], 1);
+	AppThreads::vote(Me::$id, (int) $_POST['threadID'], 1);
 }
 else if($_POST['vote'] == -1)
 {
-	AppThreads::vote(Me::$id, $_POST['threadID'], -1);
+	AppThreads::vote(Me::$id, (int) $_POST['threadID'], -1);
 }

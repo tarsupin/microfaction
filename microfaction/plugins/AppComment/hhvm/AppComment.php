@@ -466,7 +466,7 @@ abstract class AppComment {
 			
 			if($comment['has_child'] > 0)
 			{
-				if($cont = self::displayRecursive($threadData, $comment['id'], 1))
+				if($cont = self::displayRecursive($threadData, (int) $comment['id'], 1))
 				{
 					echo '<div id="reply-more-' . $cID . '" style="margin-left:30px;"><a href="javascript:showMore(' . $cID . ', 1)">Show More...</a></div>';
 				}
@@ -515,7 +515,7 @@ abstract class AppComment {
 				<p>' . Comment::showSyntax($comment['comment']) . '</p>
 				<div class="comment-options">
 					<a href="/' . $comment['handle'] . '">' . $comment['display_name'] . '</a>
-					&bull; ' . Time::fuzzy($comment['date_posted']) . '
+					&bull; ' . Time::fuzzy((int) $comment['date_posted']) . '
 					&bull; <a href="/user-panel/reports/comment?thread=' . $threadData['id'] . '&id=' . $cID . '">Report</a>
 					' . (self::$stepsAllowed > $step + 1 + $extra ? '&bull; <a href="javascript:hitReply(' . $cID . ')">Reply</a>' : '');
 					
@@ -544,7 +544,7 @@ abstract class AppComment {
 			
 			if($step < self::$stepsAllowed && $comment['has_child'] > 0)
 			{
-				if($cont = self::displayRecursive($threadData, $comment['id'], $step + 1))
+				if($cont = self::displayRecursive($threadData, (int) $comment['id'], $step + 1))
 				{
 					echo '<div style="margin-left:30px; margin-top:10px;"><a href="javascript:showMore(' . $cID . ', ' . $step . ')">Show More...</a></div>';
 				}
