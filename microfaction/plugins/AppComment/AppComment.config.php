@@ -47,7 +47,7 @@ class AppComment_config {
 			`thread_id`				int(10)			unsigned	NOT NULL	DEFAULT '0',
 			`id`					int(10)			unsigned	NOT NULL	DEFAULT '0',
 			
-			`rating`				float(6,4)					NOT NULL	DEFAULT '0.0000',
+			`rating`				float(10,4)					NOT NULL	DEFAULT '0.0000',
 			
 			INDEX (`thread_id`, `rating`)
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8 PARTITION BY KEY(thread_id) PARTITIONS 31;
@@ -59,7 +59,7 @@ class AppComment_config {
 			`parent_id`				int(10)			unsigned	NOT NULL	DEFAULT '0',
 			`id`					int(10)			unsigned	NOT NULL	DEFAULT '0',
 			
-			`rating`				float(6,4)					NOT NULL	DEFAULT '0.0000',
+			`rating`				float(10,4)					NOT NULL	DEFAULT '0.0000',
 			
 			INDEX (`parent_id`, `rating`)
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8 PARTITION BY KEY(parent_id) PARTITIONS 31;
