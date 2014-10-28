@@ -68,7 +68,7 @@ class AppThreads_config {
 		CREATE TABLE IF NOT EXISTS `threads_priority`
 		(
 			`hashtag`				varchar(22)					NOT NULL	DEFAULT '',
-			`rating`				float(6,4)					NOT NULL	DEFAULT '0.0000',
+			`rating`				float(10,4)					NOT NULL	DEFAULT '0.0000',
 			`thread_id`				int(10)			unsigned	NOT NULL	DEFAULT '0',
 			
 			UNIQUE (`thread_id`),
@@ -82,7 +82,7 @@ class AppThreads_config {
 		CREATE TABLE IF NOT EXISTS `threads_best`
 		(
 			`hashtag`				varchar(22)					NOT NULL	DEFAULT '',
-			`rating`				float(6,4)					NOT NULL	DEFAULT '0.0000',
+			`rating`				float(10,4)					NOT NULL	DEFAULT '0.0000',
 			`thread_id`				int(10)			unsigned	NOT NULL	DEFAULT '0',
 			
 			UNIQUE (`thread_id`),

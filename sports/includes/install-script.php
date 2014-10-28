@@ -5,7 +5,7 @@
 // Default Subscriptions, Active
 AppHashtags::create("Baseball", 9);
 AppHashtags::create("Basketball", 9);
-AppHashtags::create("Combat Sports", 9);
+AppHashtags::create("CombatSports", 9);
 AppHashtags::create("Cricket", 9);
 AppHashtags::create("Football", 9);
 AppHashtags::create("Golf", 9);
