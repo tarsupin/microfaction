@@ -9,20 +9,23 @@
 // Run Permissions
 require(SYS_PATH . "/controller/includes/admin_perm.php");
 
-// Must be a moderator to access this page
-if(Me::$clearance < 6)
+// Make sure that we have an accurate thread and hashtag
+if(!isset($_GET['id']) || !isset($_GET['tag']))
 {
 	header("Location: /admin"); exit;
 }
 
-// Make sure that we have an accurate thread
-if(!isset($_POST['id']))
+// Must be a moderator to access this page
+$hashtagClearance = AppHashtags::checkPrivileges(Me::$id, $_GET['tag']);
+if(!$hashtagClearance >= 6 || !$hashtagClearance == true)
 {
 	header("Location: /admin"); exit;
 }
+
+
 
 // Get Thread Data
-if(!$threadData = AppThreads::threadData($_POST['id'], 'id, uni_id, title, url, vote_up, vote_down, date_created'))
+if(!$threadData = AppThreads::threadData($_GET['id'], 'id, uni_id, title, url, vote_up, vote_down, date_created'))
 {
 	header("Location: /admin"); exit;
 }
@@ -37,6 +40,8 @@ if(Link::clicked("sub-mod-delete-thread"))
 {
 	// Delete the Thread
 	AppThreads::delete($threadData['id']);
+	Alert::saveSuccess('Thread Deleted', 'Thread deleted successfully');
+	header("Location: /new/" . $_GET['tag']); exit;
 }
 
 // Run Header
@@ -51,7 +56,7 @@ echo '
 	<br /> &nbsp; &bull; Author: ' . $authorData['display_name'] . ' (@' . $authorData['handle'] . ')
 	<br /> &nbsp; &bull; Posted: ' . Time::fuzzy((int) $threadData['date_created']) . '
 </p>
-<p><a class="button" href="/admin/delete-thread?id=' . ($threadData['id']) . '&' . Link::prepare("sub-mod-delete-thread") . '">Delete the Thread</a></p>';
+<p><a class="button" href="/admin/delete-thread?id=' . ($threadData['id']) . '&tag=' . $_GET['tag'] . '&' . Link::prepare("sub-mod-delete-thread") . '">Delete the Thread</a></p>';
 
 // Display the Footer
 require(SYS_PATH . "/controller/includes/admin_footer.php");

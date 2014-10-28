@@ -7,6 +7,13 @@ if(isset($_GET['tag']) && Link::clicked("microfaction-tag") && Me::$loggedIn)
 	if(isset($_GET['remove']))
 	{
 		AppHashtags::hashtagSubscribe(Me::$id, $_GET['tag'], false);
+		Alert::success('Unsubscribed Successfully', 'You have successfully unsubscribed from #' . $_GET['tag']);
+	}
+	else // check if we're trying to add this subscription
+	if(isset($_GET['add']))
+	{
+		AppHashtags::hashtagSubscribe(Me::$id, $_GET['tag'], true);
+		Alert::success('Subscribed Successfully', 'You have successfully subscribed to #' . $_GET['tag']);
 	}
 	else
 	{
@@ -16,7 +23,11 @@ if(isset($_GET['tag']) && Link::clicked("microfaction-tag") && Me::$loggedIn)
 
 // Prepare Values
 $hashtagList = AppHashtags::getFullList();
-$activeHashtag = $url[0];
+
+// Hashtag names in the DB have their first letter capitalized.
+// We have to make sure the site can return the correct
+// hashtag regardless of case, i.e. /dRaWiNg checks database for Drawing
+$activeHashtag = (isset($url[0]) ? ucwords(strtolower($url[0])) : "");
 
 $threadList = array();
 $voteList = array();
@@ -31,6 +42,50 @@ if(Me::$loggedIn)
 		AppThreads::runPriority($hashtagList);
 		
 		Cache::set("update_" . SITE_HANDLE, time(), 60 * 5);
+	}
+
+	if($activeHashtag)
+	{
+		// Check if hashtag is legitimate
+		if(in_array($activeHashtag, $hashtagList))
+		{
+			// Check if user is subscribed & add quick subscribe button if not
+			// Button is added to the top of the Nav panel via WidgetLoader plugin
+			// The subscription will be handled via AJAX
+			if(in_array($activeHashtag, AppHashtags::$userSubs))
+			{
+				WidgetLoader::add('SidePanel', 1, 
+					'<div class="panel-box" style="min-height: 30px;">
+						<div style="padding:10px; text-align: center;">
+							<a class="button" href="/' . $activeHashtag . '?tag=' . $activeHashtag . '&' . Link::prepare("microfaction-tag") . '&remove=1">Unsubscribe from #' . $activeHashtag . '</a>
+						</div>
+					</div>'
+				);
+			} else {
+				WidgetLoader::add('SidePanel', 1, 
+					'<div class="panel-box" style="min-height: 30px;">
+						<div style="padding:10px; text-align: center;">
+							<a class="button" href="/' . $activeHashtag . '?tag=' . $activeHashtag . '&' . Link::prepare("microfaction-tag") . '&add=1">Subscribe to #' . $activeHashtag . '</a>
+						</div>
+					</div>'
+				);
+			}
+
+			// Check user privileges on this hashtag.
+			// If user has clearance, a quick edit button
+			// is added to the bottom of the Nav panel.
+			$hashtagClearance = AppHashtags::checkPrivileges(Me::$id, $activeHashtag);
+			if($hashtagClearance >= 6 || $hashtagClearance == true)
+			{
+				WidgetLoader::add('SidePanel', 50, 
+					'<div class="panel-box" style="min-height: 30px;">
+						<div style="padding:10px; text-align: center;">
+							<a class="button" href="/edit-rules?hashtag=' . $activeHashtag . '">Edit Rules for ' . ucfirst($activeHashtag) . '</a>
+						</div>
+					</div>'
+				);
+			}
+		}
 	}
 	
 	$priorityThreads = AppThreads::listPriority(1, 50, $activeHashtag);
@@ -75,6 +130,10 @@ echo '
 echo AppHashtags::drawSubscriptionList();
 
 echo '
+	<div id="ajax-subscribe-message"></div>
+';
+
+echo '
 <div class="overwrap-box">
 	<div class="inner-box">';
 
@@ -106,7 +165,7 @@ foreach($priorityThreads as $threads)
 			$vDown .= " vStayDown";
 		}
 	}
-	
+
 	echo '
 	<div class="inner-line">
 		<div class="inner-score">
@@ -115,7 +174,17 @@ foreach($priorityThreads as $threads)
 		</div>
 		<div class="inner-name">
 			<a href="' . $threads['url'] . '">' . $threads['title'] . '</a>
-			<div class="inner-desc"><a href="/thread?id=' . $threadID . '">' . $threads['comments'] . ' comments</a> ' . ($activeHashtag == "" ? '&bull; <a href="/' . $threads['hashtag'] . '">/' . $threads['hashtag'] . '</a>' : '') . ' &bull; By <a href="/' . $threads['handle'] . '">' . $threads['display_name'] . '</a> &bull; ' . Time::fuzzy((int) $threads['date_created']) . '</div>
+			<div class="inner-desc"><a href="/thread?id=' . $threadID . '">' . $threads['comments'] . ' comments</a> ' . ($activeHashtag == "" ? '&bull; <a href="/' . $threads['hashtag'] . '">/' . $threads['hashtag'] . '</a>' : '') . ' &bull; By <a href="/' . $threads['handle'] . '">' . $threads['display_name'] . '</a> &bull; ' . Time::fuzzy((int) $threads['date_created']) . ' ';
+			if($activeHashtag)
+			{
+				if($hashtagClearance >= 6 || $hashtagClearance == true)
+				{
+					echo '<a class="red" href="/admin/delete-thread?id=' . $threadID . '&tag=' . $activeHashtag . '">Delete</a>'; 
+				}
+			}
+			
+	echo '
+			</div>
 		</div>
 	</div>';
 }

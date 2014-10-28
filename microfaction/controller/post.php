@@ -39,8 +39,8 @@ if(Form::submitted("post-microfaction-" . SITE_HANDLE))
 			if($threadID = AppThreads::createThread($_POST['hashtag'], $_POST['title'], $parsedURL['full']))
 			{
 				Alert::saveSuccess("Link Posted", "You have successfully posted a link!");
-				
-				header("Location: /new"); exit;
+				AppThreads::vote(Me::$id, $threadID, 1);
+				header("Location: /new/" . $_POST['hashtag']); exit;
 			}
 			else
 			{
@@ -57,6 +57,16 @@ else
 {
 	$_POST['title'] = (isset($_POST['title']) ? Sanitize::text($_POST['title']) : "");
 	$_POST['url'] = (isset($_POST['url']) ? Sanitize::url($_POST['url']) : "");
+}
+
+if(Form::submitted("hashtag-edit-rules-" . SITE_HANDLE))
+{
+	$rulesFile = fopen(CONF_PATH . "/includes/rules/rules-" . strtolower($_POST['hashtag']) . ".php", "w") or die("Cannot open file");
+	$rulesText = $_POST['rules'];
+	fwrite($rulesFile, '<?php if(!defined("CONF_PATH")) { die("No direct script access allowed."); } echo "' . $rulesText . '";');
+	fclose($rulesFile);
+	Alert::saveSuccess("Rules Saved", "You have successfully changed the rules!");
+	header("Location: /new/" . $_POST['hashtag']); exit;
 }
 
 // Run Global Script
@@ -78,7 +88,7 @@ echo '
 <form class="uniform" action="/post" method="post">' . Form::prepare("post-microfaction-" . SITE_HANDLE) . '
 	<p>
 		Category:
-		<select name="hashtag">';
+		<select name="hashtag" onchange="javascript:showRules(document.URL, this.value); return false;">';
 		
 		foreach($hashtagList as $hashtag)
 		{
@@ -92,7 +102,14 @@ echo '
 	<p>Title: <input type="text" name="title" value="' . htmlspecialchars($_POST['title']) . '" maxlength="72" autocomplete="off" /></p>
 	<p>URL: <input type="text" name="url" value="' . htmlspecialchars($_POST['url']) . '" maxlength="148" autocomplete="off" /></p>
 	<p><input type="submit" name="submit" value="Create Post" /></p>
-</form>';
+</form>
+<div id="rules"></div>
+<script type="text/javascript">
+	window.addEventListener("load", function() {
+		var selectInput = document.getElementsByName("hashtag")[0].value;
+		showRules(document.URL, selectInput);
+	});
+</script>';
 
 echo '
 </div>';

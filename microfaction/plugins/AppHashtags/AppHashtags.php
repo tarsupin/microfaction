@@ -29,6 +29,45 @@ abstract class AppHashtags {
 	public static $userSubs = array();			// <array>
 	public static $userActiveSubs = array();	// <array>
 	public static $userSubsSQL = "";			// <str>
+
+/****** Check if user is subscribed to current hashtag *******/
+	public static function isSubscribed
+		(
+			$uniID               // <int> The UniID to check
+		,	$checkHashtag        // <str> The viewed hashtag being checked for 'subscribed' status
+		) 
+		{
+			self::$userActiveSubs = array();
+
+			// Get the list of user's active subs
+			$subs = Database::selectMultiple("SELECT hashtag, active FROM user_subscriptions WHERE uni_id=?", array($uniID));
+			
+			if(count($subs) == 0)
+			{
+				// Get the site's priority hashtags
+				$priorityTags = Database::selectMultiple("SELECT hashtag, priority FROM micro_hashtags WHERE priority >= ? ORDER BY hashtag", array(8));
+				
+				Database::startTransaction();
+				
+				// Add all subscriptions to the user
+				foreach($priorityTags as $tag)
+				{
+					$active = ($tag['priority'] == 9 ? 1 : 0);
+					
+					Database::query("INSERT INTO user_subscriptions (uni_id, hashtag, active) VALUES (?, ?, ?)", array($uniID, $tag['hashtag'], $active));
+				}
+				
+				Database::endTransaction();
+				
+				$subs = Database::selectMultiple("SELECT hashtag, active FROM user_subscriptions WHERE uni_id=?", array($uniID));
+			}
+			
+			foreach($subs as $sub)
+			{
+				if($sub['hashtag'] == $checkHashtag)
+					return true;
+			}
+		}
 	
 	
 /****** Get the subscriptions for the user ******/
@@ -285,5 +324,24 @@ abstract class AppHashtags {
 			<div class="s-tag s-tag-off" style="background-color:#eea0a0;"><a href="/subscriptions"><span class="icon-plus"></span> Add More</a></div>
 		</div>';
 	}
-	
+/****** Check if user has hashtag administrative privileges ******/
+	public static function checkPrivileges
+	(
+		$uniID				// <int> The uniID of the user.
+	,	$hashtag 			// <str> the hashtag for which privileges are being checked 
+	)						// RETURNS clearance level or TRUE/FALSE for moderator status
+
+	// AppHashtags::checkPrivileges(Me::$id, $activeHashtag);
+	{
+		// Check if user is a global moderator
+		$hashtagClearance = Database::selectValue("SELECT clearance FROM users WHERE uni_id=? LIMIT 1", array($uniID));
+		if($hashtagClearance >= 6) { return $hashtagClearance; }
+		// Check if user is a hashtag(local) moderator
+		if($isModerator = Database::selectOne("SELECT * FROM moderators WHERE hashtag=? AND uni_id=? LIMIT 1", array($hashtag, Me::$id)))
+		{
+			return true;
+		}
+		// Return false if user is has no moderation privileges
+		return false;
+	}
 }
