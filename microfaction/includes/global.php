@@ -3,21 +3,19 @@
 // Main Navigation
 $urlActive = (isset($url[0]) && $url[0] != "" ? $url[0] : "home");
 
-$html = '
+WidgetLoader::add("SidePanel", 5, '
 <div class="panel-box">
 	<ul class="panel-slots">
 		<li class="nav-slot' . ($urlActive == "new" ? " nav-active" : "") . '"><a href="/new">Recent Posts<span class="icon-circle-right nav-arrow"></span></a></li>
 		<li class="nav-slot' . ($urlActive == "post" ? " nav-active" : "") . '"><a href="/post">Create Post<span class="icon-circle-right nav-arrow"></span></a></li>
 	</ul>
-</div>';
-
-WidgetLoader::add("SidePanel", 5, $html);
+</div>');
 
 // Prepare Values
 $uniURL = str_replace("http://", "", URL::microfaction_com()) . Me::$slg;
 $siteType = strtolower(str_replace("micro_", "", SITE_HANDLE));
 
-$html = str_replace("is-" . $siteType, "nav-active", '
+WidgetLoader::add("SidePanel", 10, str_replace("is-" . $siteType, "nav-active", '
 <div class="panel-box">
 	<ul class="panel-slots">
 		<li class="nav-slot is-bliss"><a href="http://bliss.' . $uniURL . '">Bliss<span class="icon-circle-right nav-arrow"></span></a></li>
@@ -30,6 +28,4 @@ $html = str_replace("is-" . $siteType, "nav-active", '
 		<li class="nav-slot is-sciences"><a href="http://sciences.' . $uniURL . '">Sciences<span class="icon-circle-right nav-arrow"></span></a></li>
 		<li class="nav-slot is-sports"><a href="http://sports.' . $uniURL . '">Sports &amp; Rec<span class="icon-circle-right nav-arrow"></span></a></li>
 	</ul>
-</div>');
-
-WidgetLoader::add("SidePanel", 10, $html);
+</div>'));
