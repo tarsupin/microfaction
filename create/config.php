@@ -77,3 +77,6 @@ else if(ENVIRONMENT == "local") {
 	$config['admin-email'] = "info@microfaction.test";
 
 }
+
+// Base style sheet for this site
+Metadata::addHeader('<link rel="stylesheet" href="' . CDN . '/css/unifaction-2col.css" />');
