@@ -1,15 +1,29 @@
 <?php if(!defined("CONF_PATH")) { die("No direct script access allowed."); }
 
 // Main Navigation
-$urlActive = (isset($url[0]) && $url[0] != "" ? $url[0] : "home");
+if(isset($url[0]))
+{
+	switch($url[0])
+	{
+		case "":
+			$urlActive = "";
+			break;
+		case "new":
+			$urlActive = (isset($url[1]) ? $url[1] : "");
+			break;
+		default:
+			$urlActive = $url[0];
+			break;
+	}
+}
 
-WidgetLoader::add("SidePanel", 5, '
+$html = '
 <div class="panel-box">
 	<ul class="panel-slots">
-		<li class="nav-slot' . ($urlActive == "new" ? " nav-active" : "") . '"><a href="/new">Recent Posts<span class="icon-circle-right nav-arrow"></span></a></li>
-		<li class="nav-slot' . ($urlActive == "post" ? " nav-active" : "") . '"><a href="/post">Create Post<span class="icon-circle-right nav-arrow"></span></a></li>
+		<li class="nav-slot' . ($urlActive == "new" ? " nav-active" : "") . '"><a href="/new' . ($urlActive !== "" ? "/" . $urlActive : "") . '">Recent Posts<span class="icon-circle-right nav-arrow"></span></a></li>
+		<li class="nav-slot' . ($urlActive == "post" ? " nav-active" : "") . '"><a href="/post' . ($urlActive !== "" ? "?hashtag=" . $urlActive : "") . '">Create Post<span class="icon-circle-right nav-arrow"></span></a></li>
 	</ul>
-</div>');
+</div>';
 
 // Prepare Values
 $uniURL = str_replace("http://", "", URL::microfaction_com()) . Me::$slg;

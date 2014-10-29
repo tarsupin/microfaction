@@ -92,6 +92,7 @@ echo '
 		
 		foreach($hashtagList as $hashtag)
 		{
+			var_dump($_GET['hashtag']);
 			echo '
 			<option value="' . $hashtag . '"' . ($_GET['hashtag'] == $hashtag ? ' selected' : '') . '>#' . $hashtag . '</option>';
 		}
