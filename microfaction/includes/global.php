@@ -17,17 +17,17 @@ if(isset($url[0]))
 	}
 }
 
-$html = '
-<div class="panel-box">
+// Prepare Values
+$uniURL = str_replace("http://", "", URL::microfaction_com()) . Me::$slg;
+$siteType = strtolower(str_replace("micro_", "", SITE_HANDLE));
+
+
+WidgetLoader::add("SidePanel", 8, str_replace("is-" . $siteType, "nav-active", '<div class="panel-box">
 	<ul class="panel-slots">
 		<li class="nav-slot' . ($urlActive == "new" ? " nav-active" : "") . '"><a href="/new' . ($urlActive !== "" ? "/" . $urlActive : "") . '">Recent Posts<span class="icon-circle-right nav-arrow"></span></a></li>
 		<li class="nav-slot' . ($urlActive == "post" ? " nav-active" : "") . '"><a href="/post' . ($urlActive !== "" ? "?hashtag=" . $urlActive : "") . '">Create Post<span class="icon-circle-right nav-arrow"></span></a></li>
 	</ul>
-</div>';
-
-// Prepare Values
-$uniURL = str_replace("http://", "", URL::microfaction_com()) . Me::$slg;
-$siteType = strtolower(str_replace("micro_", "", SITE_HANDLE));
+</div>'));
 
 WidgetLoader::add("SidePanel", 10, str_replace("is-" . $siteType, "nav-active", '
 <div class="panel-box">
