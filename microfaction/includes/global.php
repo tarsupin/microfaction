@@ -21,7 +21,6 @@ if(isset($url[0]))
 $uniURL = str_replace("http://", "", URL::microfaction_com()) . Me::$slg;
 $siteType = strtolower(str_replace("micro_", "", SITE_HANDLE));
 
-
 WidgetLoader::add("SidePanel", 8, str_replace("is-" . $siteType, "nav-active", '<div class="panel-box">
 	<ul class="panel-slots">
 		<li class="nav-slot' . ($urlActive == "new" ? " nav-active" : "") . '"><a href="/new' . ($urlActive !== "" ? "/" . $urlActive : "") . '">Recent Posts<span class="icon-circle-right nav-arrow"></span></a></li>
